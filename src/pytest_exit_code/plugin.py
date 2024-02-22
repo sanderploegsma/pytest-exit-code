@@ -1,19 +1,36 @@
 import pytest
 
+from pytest_exit_code import ExitCode
 
-def pytest_addoption(parser):
-    group = parser.getgroup('exit-code')
-    group.addoption(
-        '--foo',
-        action='store',
-        dest='dest_foo',
-        default='2024',
-        help='Set the value for the fixture "bar".'
-    )
-
-    parser.addini('HELLO', 'Dummy pytest.ini setting')
+stash_key = pytest.StashKey["ExitCodePlugin"]()
 
 
-@pytest.fixture
-def bar(request):
-    return request.config.option.dest_foo
+class ExitCodePlugin:
+    def __init__(self) -> None:
+        self.exit_code = ExitCode.TESTS_PASSED
+
+    @pytest.hookimpl
+    def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
+        if report.failed:
+            if report.when in ["setup", "teardown"]:
+                self.exit_code |= ExitCode.TESTS_ERRORED
+            else:
+                self.exit_code |= ExitCode.TESTS_FAILED
+
+        if report.skipped:
+            self.exit_code |= ExitCode.TESTS_SKIPPED
+
+    @pytest.hookimpl
+    def pytest_sessionfinish(self, session: pytest.Session):
+        session.exitstatus = self.exit_code
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    plugin = ExitCodePlugin()
+    config.stash[stash_key] = plugin
+    config.pluginmanager.register(plugin, "exit_code")
+
+
+def pytest_unconfigure(config: pytest.Config) -> None:
+    if plugin := config.stash.get(stash_key, None):
+        config.pluginmanager.unregister(plugin)

@@ -1,61 +1,51 @@
-def test_bar_fixture(pytester):
-    """Make sure that pytest accepts our fixture."""
+import pytest
 
-    # create a temporary pytest test module
-    pytester.makepyfile("""
-        def test_sth(bar):
-            assert bar == "europython2015"
-    """)
-
-    # run pytest with the following cmd args
-    result = pytester.runpytest(
-        '--foo=europython2015',
-        '-v'
-    )
-
-    # fnmatch_lines does an assertion internally
-    result.stdout.fnmatch_lines([
-        '*::test_sth PASSED*',
-    ])
-
-    # make sure that we get a '0' exit code for the testsuite
-    assert result.ret == 0
+from pytest_exit_code import ExitCode
 
 
-def test_help_message(pytester):
-    result = pytester.runpytest(
-        '--help',
-    )
-    # fnmatch_lines does an assertion internally
-    result.stdout.fnmatch_lines([
-        'exit-code:',
-        '*--foo=DEST_FOO*Set the value for the fixture "bar".',
-    ])
-
-
-def test_hello_ini_setting(pytester):
-    pytester.makeini("""
-        [pytest]
-        HELLO = world
-    """)
-
-    pytester.makepyfile("""
+@pytest.mark.parametrize(
+    "keyword,expected",
+    [
+        ("test_pass", ExitCode.TESTS_PASSED),
+        ("test_fail", ExitCode.TESTS_FAILED),
+        ("test_error", ExitCode.TESTS_ERRORED),
+        ("test_skip", ExitCode.TESTS_SKIPPED),
+        (
+            "",
+            ExitCode.TESTS_PASSED
+            | ExitCode.TESTS_FAILED
+            | ExitCode.TESTS_ERRORED
+            | ExitCode.TESTS_SKIPPED,
+        ),
+    ],
+)
+def test_correct_exit_codes(
+    pytester,
+    keyword: str,
+    expected: ExitCode,
+) -> None:
+    pytester.makepyfile(
+        """
         import pytest
 
+        def test_pass():
+            assert 1 == 1
+
+        def test_fail():
+            assert 1 == 2
+
         @pytest.fixture
-        def hello(request):
-            return request.config.getini('HELLO')
+        def failing_fixture():
+            raise RuntimeError("Failure in fixture")
 
-        def test_hello_world(hello):
-            assert hello == 'world'
-    """)
+        def test_error(failing_fixture):
+            assert 1 == 1
 
-    result = pytester.runpytest('-v')
+        @pytest.mark.skip
+        def test_skip():
+            assert 1 == 1
+    """
+    )
 
-    # fnmatch_lines does an assertion internally
-    result.stdout.fnmatch_lines([
-        '*::test_hello_world PASSED*',
-    ])
-
-    # make sure that we get a '0' exit code for the testsuite
-    assert result.ret == 0
+    result = pytester.runpytest("-k", keyword)
+    assert result.ret == expected
