@@ -1,22 +1,16 @@
 [build-system]
-requires = [
-  "setuptools>=61.0.0",
-]
+requires = ["setuptools>=61.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytest-exit-code"
-description = "A simple plugin to use with pytest"
+description = "A pytest plugin that overrides the built-in exit codes to retain more information about the test results."
 version = "0.1.0"
-readme = "README.rst"
+readme = "README.md"
 requires-python = ">=3.8"
-authors = [
-    { name = "Sander Ploegsma", email = "sanderploegsma@gmail.com" },
-]
-maintainers = [
-    { name = "Sander Ploegsma", email = "sanderploegsma@gmail.com" },
-]
-license = {file = "LICENSE"}
+authors = [{ name = "Sander Ploegsma", email = "sanderploegsma@gmail.com" }]
+maintainers = [{ name = "Sander Ploegsma", email = "sanderploegsma@gmail.com" }]
+license = { file = "LICENSE" }
 classifiers = [
     "Framework :: Pytest",
     "Development Status :: 4 - Beta",
@@ -34,10 +28,10 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
     "License :: OSI Approved :: Apache Software License",
 ]
-dependencies = [
-    "pytest>=6.2.0",
-]
+dependencies = ["pytest>=6.2.0"]
+
 [project.urls]
 Repository = "https://github.com/sanderploegsma/pytest-exit-code"
+
 [project.entry-points.pytest11]
 django = "pytest_exit_code.plugin"
