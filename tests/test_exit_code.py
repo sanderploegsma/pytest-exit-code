@@ -6,7 +6,7 @@ from pytest_exit_code import ExitCode
 @pytest.mark.parametrize(
     "keyword,expected",
     [
-        ("test_pass", ExitCode.TESTS_PASSED),
+        ("test_pass", ExitCode.ALL_PASSED),
         ("test_fail", ExitCode.TESTS_FAILED),
         ("test_error", ExitCode.TESTS_ERRORED),
         ("test_skip", ExitCode.TESTS_SKIPPED),
@@ -17,6 +17,7 @@ from pytest_exit_code import ExitCode
             | ExitCode.TESTS_ERRORED
             | ExitCode.TESTS_SKIPPED,
         ),
+        ("test_unknown", ExitCode.ALL_PASSED),
     ],
 )
 def test_correct_exit_codes(

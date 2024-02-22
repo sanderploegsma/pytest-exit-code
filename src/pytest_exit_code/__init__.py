@@ -2,7 +2,8 @@ from enum import IntFlag
 
 
 class ExitCode(IntFlag):
-    TESTS_PASSED = 0
-    TESTS_FAILED = 1
-    TESTS_ERRORED = 2
-    TESTS_SKIPPED = 4
+    ALL_PASSED = 0
+    TESTS_PASSED = 1
+    TESTS_FAILED = 2
+    TESTS_ERRORED = 4
+    TESTS_SKIPPED = 8

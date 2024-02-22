@@ -7,10 +7,13 @@ stash_key = pytest.StashKey["ExitCodePlugin"]()
 
 class ExitCodePlugin:
     def __init__(self) -> None:
-        self.exit_code = ExitCode.TESTS_PASSED
+        self.exit_code = ExitCode.ALL_PASSED
 
     @pytest.hookimpl
     def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
+        if report.passed and report.when in ["call"]:
+            self.exit_code |= ExitCode.TESTS_PASSED
+
         if report.failed:
             if report.when in ["setup", "teardown"]:
                 self.exit_code |= ExitCode.TESTS_ERRORED
@@ -22,7 +25,10 @@ class ExitCodePlugin:
 
     @pytest.hookimpl
     def pytest_sessionfinish(self, session: pytest.Session):
-        session.exitstatus = self.exit_code
+        if self.exit_code > ExitCode.TESTS_PASSED:
+            session.exitstatus = self.exit_code
+        else:
+            session.exitstatus = ExitCode.ALL_PASSED
 
 
 def pytest_configure(config: pytest.Config) -> None:
