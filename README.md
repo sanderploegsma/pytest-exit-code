@@ -5,7 +5,7 @@ A [pytest] plugin that overrides the built-in exit codes to retain more informat
 ## Features
 
 This plugin changes the exit code returned by running `pytest`.
-The exit codes can range from `0` to `15` and are a combination of the following bitwise flags:
+The exit codes can range from `0` to `63` and are a combination of the following bitwise flags:
 
 | Flag | Description                     |
 | ---- | ------------------------------- |
@@ -14,6 +14,8 @@ The exit codes can range from `0` to `15` and are a combination of the following
 | `2`  | One or more tests failed.       |
 | `4`  | One or more tests errored.      |
 | `8`  | One or more tests were skipped. |
+| `16` | One or more tests xfailed.      |
+| `32` | One or more tests xpassed.      |
 
 So:
 
