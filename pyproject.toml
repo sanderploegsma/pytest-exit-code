@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pytest-exit-code"
 description = "A pytest plugin that overrides the built-in exit codes to retain more information about the test results."
-version = "0.1.0"
+version = "0.2.0"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [{ name = "Sander Ploegsma", email = "sanderploegsma@gmail.com" }]
