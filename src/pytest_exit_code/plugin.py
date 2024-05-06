@@ -12,7 +12,10 @@ class ExitCodePlugin:
     @pytest.hookimpl
     def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
         if report.passed and report.when in ["call"]:
-            self.exit_code |= ExitCode.TESTS_PASSED
+            if hasattr(report, "wasxfail"):
+                self.exit_code |= ExitCode.TESTS_XPASSED
+            else:
+                self.exit_code |= ExitCode.TESTS_PASSED
 
         if report.failed:
             if report.when in ["setup", "teardown"]:
@@ -21,7 +24,10 @@ class ExitCodePlugin:
                 self.exit_code |= ExitCode.TESTS_FAILED
 
         if report.skipped:
-            self.exit_code |= ExitCode.TESTS_SKIPPED
+            if hasattr(report, "wasxfail"):
+                self.exit_code |= ExitCode.TESTS_XFAILED
+            else:
+                self.exit_code |= ExitCode.TESTS_SKIPPED
 
     @pytest.hookimpl
     def pytest_sessionfinish(self, session: pytest.Session):
