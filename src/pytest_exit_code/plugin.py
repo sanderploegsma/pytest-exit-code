@@ -10,6 +10,11 @@ class ExitCodePlugin:
         self.exit_code = ExitCode.ALL_PASSED
 
     @pytest.hookimpl
+    def pytest_collectreport(self, report: pytest.CollectReport) -> None:
+        if report.skipped:
+            self.exit_code |= ExitCode.TESTS_SKIPPED
+
+    @pytest.hookimpl
     def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
         if report.passed and report.when in ["call"]:
             if hasattr(report, "wasxfail"):
