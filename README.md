@@ -26,13 +26,24 @@ So:
 ## Installation
 
 ```sh
-$ pip install python-exit-code
+$ pip install pytest-exit-code
 ```
 
 ## Contributing
 
 Contributions are very welcome.
-Tests can be run with [tox], please ensure the coverage at least stays the same before you submit a pull request.
+This project uses [uv] for development. Before you submit a pull request, please run the tests and linters:
+
+```sh
+$ uv run pytest
+$ uv run ruff check
+$ uv run ruff format --check
+```
+
+## Releasing
+
+The version is derived from the git tag by [setuptools-scm].
+To release, create a GitHub Release with a new tag in the form `vX.Y.Z`; the release workflow builds the package and publishes it to PyPI.
 
 ## License
 
@@ -43,4 +54,5 @@ Distributed under the terms of the [Apache Software License 2.0] license, `pytes
 [pypi-version-badge]: https://img.shields.io/pypi/v/pytest-exit-code.svg
 [pypi-pyversions-badge]: https://img.shields.io/pypi/pyversions/pytest-exit-code.svg
 [pytest]: https://github.com/pytest-dev/pytest
-[tox]: https://tox.readthedocs.io/en/latest/
+[uv]: https://docs.astral.sh/uv/
+[setuptools-scm]: https://setuptools-scm.readthedocs.io/

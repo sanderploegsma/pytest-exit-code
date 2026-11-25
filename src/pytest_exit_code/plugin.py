@@ -40,7 +40,8 @@ class ExitCodePlugin:
 def pytest_configure(config: pytest.Config) -> None:
     plugin = ExitCodePlugin()
     config.stash[stash_key] = plugin
-    config.pluginmanager.register(plugin, "exit_code")
+    # Must not clash with the "exit_code" entry-point name in pyproject.toml.
+    config.pluginmanager.register(plugin, "exit_code_plugin")
 
 
 def pytest_unconfigure(config: pytest.Config) -> None:
