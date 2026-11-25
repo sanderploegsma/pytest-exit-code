@@ -8,18 +8,70 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+      - name: Ruff check
+        run: uv run --locked ruff check
+      - name: Ruff format
+        run: uv run --locked ruff format --check
+
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy-3.8"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "3.15", "pypy3.11"]
+        pytest-version: ["7", "8", "9"]
+        exclude:
+          # pytest 7 does not support Python 3.13 and newer.
+          - { python-version: "3.13", pytest-version: "7" }
+          - { python-version: "3.14", pytest-version: "7" }
+          - { python-version: "3.15", pytest-version: "7" }
+    name: test (Python ${{ matrix.python-version }}, pytest ${{ matrix.pytest-version }})
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install tox
-        run: pip install tox
+      - name: Install project
+        run: uv sync --locked
+      # uv.lock pins a single pytest version; override it in the venv to test
+      # each supported major version. --no-sync below keeps uv from reverting it.
+      - name: Install pytest ${{ matrix.pytest-version }}
+        run: uv pip install "pytest==${{ matrix.pytest-version }}.*"
       - name: Test
-        run: tox -e py
+        run: |
+          uv run --no-sync pytest --version
+          uv run --no-sync pytest
+
+  test-lowest:
+    name: test (lowest supported dependencies)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          python-version: "3.10"
+      # Resolves the oldest versions allowed by pyproject.toml (pytest 7.0.0).
+      # --no-dev avoids installing ancient versions of the dev tools.
+      - name: Test
+        run: |
+          uv run --no-dev --resolution lowest-direct pytest --version
+          uv run --no-dev --resolution lowest-direct pytest

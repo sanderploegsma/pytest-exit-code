@@ -1,4 +1,5 @@
 import pytest
+
 from pytest_exit_code import ExitCode
 
 
