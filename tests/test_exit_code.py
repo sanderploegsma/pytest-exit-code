@@ -67,3 +67,19 @@ def test_correct_exit_codes(
 
     result = pytester.runpytest("-k", keyword)
     assert result.ret == expected
+
+
+def test_collection_skip_sets_the_skipped_bit(pytester) -> None:
+    pytester.makepyfile(
+        test_pass="def test_pass(): pass",
+        test_skipped="""
+        import pytest
+
+        pytest.skip("module skip", allow_module_level=True)
+        """,
+    )
+
+    result = pytester.runpytest()
+
+    result.assert_outcomes(passed=1, skipped=1)
+    assert result.ret == ExitCode.TESTS_PASSED | ExitCode.TESTS_SKIPPED
